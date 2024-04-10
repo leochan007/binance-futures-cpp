@@ -38,7 +38,6 @@ namespace bfcpp
   public:
     UsdFuturesMarket(const ApiAccess& access = {}) : UsdFuturesMarket(MarketType::Futures, FuturestWebSockUri, access)
     {
-
     }
 
 
@@ -530,7 +529,7 @@ namespace bfcpp
       {
         while (!session->getCancelToken().is_canceled())
         {
-          session->client.receive().then([=, token = session->getCancelToken()](pplx::task<ws::client::websocket_incoming_message> websocketInMessage)
+          session->client->receive().then([=, token = session->getCancelToken()](pplx::task<ws::client::websocket_incoming_message> websocketInMessage)
           {
             if (!token.is_canceled())
             {
@@ -577,15 +576,17 @@ namespace bfcpp
     bool createListenKey(const MarketType marketType);
 
 
-    shared_ptr<WebSocketSession> connect(const string& uri)
+    shared_ptr<WebSocketSession> connect(const string& uri, const string & proxy)
     {
-      auto session = std::make_shared<WebSocketSession>();
+      auto session = std::make_shared<WebSocketSession>(proxy);
       session->uri = uri;
 
       try
       {
         web::uri wsUri(utility::conversions::to_string_t(uri));
-        session->client.connect(wsUri).then([&session]
+        web::web_proxy proxy(U("http://127.0.0.1:1095"));
+        // web::websockets::client::websocket_client_config config;
+        session->client->connect(wsUri).then([&session]
         {
           session->connected = true;
         }).wait();
@@ -603,7 +604,7 @@ namespace bfcpp
     {
       std::tuple<MonitorToken, shared_ptr<WebSocketSession>> tokenAndSession;
 
-      if (shared_ptr<WebSocketSession> session = connect(uri); session)
+      if (shared_ptr<WebSocketSession> session = connect(uri, "http://127.0.0.1:1095"); session)
       {
         if (MonitorToken monitor = createReceiveTask(session, handler);  monitor.isValid())
         {
@@ -633,7 +634,7 @@ namespace bfcpp
         {
           while (!token.is_canceled())
           {
-            session->client.receive().then([=](pplx::task<ws::client::websocket_incoming_message> websocketInMessage)
+            session->client->receive().then([=](pplx::task<ws::client::websocket_incoming_message> websocketInMessage)
             {
               if (!token.is_canceled())
               {

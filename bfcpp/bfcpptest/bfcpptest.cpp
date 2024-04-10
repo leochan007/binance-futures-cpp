@@ -272,7 +272,7 @@ void usdFutureDataStream(const ApiAccess& access)
 /// <summary>
 /// Receives from the symbol mini ticker, updated every 1000ms.
 /// </summary>
-void monitorSymbol()
+void monitorSymbol(const ApiAccess & access)
 {
 	std::cout << "\n\n--- USD-M Futures Monitor Symbol Mini Ticker ---\n";
 
@@ -287,7 +287,7 @@ void monitorSymbol()
 	};
 
 
-	UsdFuturesMarket futures;
+	UsdFuturesMarket futures(access);
 	futures.monitorSymbol("BTCUSDT", onSymbolMiniTickHandler);
 
 	std::this_thread::sleep_for(10s);
@@ -1012,6 +1012,7 @@ int main(int argc, char** argv)
 	{
 		std::string apiFutTest, secretFutTest;
 		std::string apiFut, secretFut;
+		std::string proxy;
 
 		bool testNetMode = true;
 
@@ -1021,7 +1022,7 @@ int main(int argc, char** argv)
 			// <test | live>
 			// <api key>
 			// <secret key>
-			if (auto fileSize = std::filesystem::file_size(std::filesystem::path {argv[1]}) ; fileSize > 140)
+			if (auto fileSize = std::filesystem::file_size(std::filesystem::path {argv[1]}) ; fileSize > 200)
 			{
 				logg("Key file should be format with 3 lines:\nLine 1: <test | live>\nLine 2: api key\nLine 3: secret key");
 			}
@@ -1043,6 +1044,8 @@ int main(int argc, char** argv)
 					std::getline(fileStream, apiFutTest);
 					std::getline(fileStream, secretFutTest);
 				}
+				
+				std::getline(fileStream, proxy);
 			}
 		}
 
@@ -1052,7 +1055,6 @@ int main(int argc, char** argv)
 		//monitorMarkPrice();
 		//monitorMarkPrice("BTCUSDT");
 		//monitorCandleSticks();
-		monitorSymbol();
 		//monitorSymbolBook();
 		//monitorAllMarketMiniTicker();
 		//monitorMultipleStreams();
@@ -1067,7 +1069,7 @@ int main(int argc, char** argv)
 
 		if (testNetMode)
 		{
-			ApiAccess access { apiFutTest, secretFutTest };
+			ApiAccess access { apiFutTest, secretFutTest, proxy };
 			//usdFutureTestNetDataStream(access);
 
 			//OpenAndCloseLimitOrder openCloseLimit{ access };
@@ -1090,10 +1092,12 @@ int main(int argc, char** argv)
 			//newOrderBatch(access);
 
 			//usdFutureDataStream(ApiAccess{ apiFut, secretFut });
+			monitorSymbol(access);
 		}
 		else
 		{
-			ApiAccess access{ apiFut, secretFut };
+			ApiAccess access{ apiFut, secretFut, proxy };
+			monitorSymbol(access);
 
 			//takerBuySellVolume(access);
 		}

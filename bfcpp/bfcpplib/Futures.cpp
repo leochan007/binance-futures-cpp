@@ -206,7 +206,7 @@ namespace bfcpp
 
     if (createListenKey(m_marketType))
     {
-      if (auto session = connect(m_exchangeBaseUri + "/ws/" + m_listenKey); session)
+      if (auto session = connect(m_exchangeBaseUri + "/ws/" + m_listenKey, "http:/127.0.0.1:1095"); session)
       {
         try
         {
@@ -705,7 +705,7 @@ namespace bfcpp
 
       session->cancel();
 
-      session->client.close(ws::client::websocket_close_status::going_away).then([&session]()
+      session->client->close(ws::client::websocket_close_status::going_away).then([&session]()
       {
         session->connected = false;
       }).wait();

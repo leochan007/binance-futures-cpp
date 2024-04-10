@@ -519,18 +519,22 @@ namespace bfcpp
   /// </summary>
   struct ApiAccess
   {
-    ApiAccess() = default;
-    ApiAccess(const string& api, const string& secret = {}) : apiKey(api), secretKey(secret)
-    {
-
+    ApiAccess() {
+      std::string proxy = std::getenv("HTTP_PROXY");
+      std::cout << "proxy:" << proxy << std::endl;
     }
-    ApiAccess(string&& api, string&& secret = {}) : apiKey(api), secretKey(secret)
-    {
 
+    ApiAccess(const string& api, const string& secret = {}, const string& proxy = {}) : apiKey(api), secretKey(secret), proxy(proxy)
+    {
+    }
+
+    ApiAccess(string&& api, string&& secret = {}, string&& proxy = {}) : apiKey(api), secretKey(secret), proxy(proxy)
+    {
     }
 
     string apiKey;
     string secretKey;
+    string proxy;
   };
 
 
@@ -572,9 +576,12 @@ namespace bfcpp
 
 
   public:
-    WebSocketSession() : connected(false), id(0), cancelToken(cancelTokenSource.get_token())
+    WebSocketSession(const string & proxy) : connected(false), id(0), cancelToken(cancelTokenSource.get_token())
     {
-
+       ws::client::websocket_client_config config;
+       web::web_proxy proxyObj(U(proxy));
+       config.set_proxy(proxyObj);
+       client = std::make_shared<ws::client::websocket_client>(config);
     }
 
     WebSocketSession(WebSocketSession&& other) = default;
@@ -584,7 +591,7 @@ namespace bfcpp
     string uri;
 
     // client for the websocket
-    ws::client::websocket_client client;
+    shared_ptr<ws::client::websocket_client> client;
     // the task which receives the websocket messages
     pplx::task<void> receiveTask;
 
