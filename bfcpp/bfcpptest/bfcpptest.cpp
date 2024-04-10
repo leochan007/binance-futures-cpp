@@ -1052,12 +1052,12 @@ int main(int argc, char** argv)
 		//monitorMarkPrice();
 		//monitorMarkPrice("BTCUSDT");
 		//monitorCandleSticks();
-		//monitorSymbol();
+		monitorSymbol();
 		//monitorSymbolBook();
 		//monitorAllMarketMiniTicker();
 		//monitorMultipleStreams();
 		//monitorPartialBookDepth();
-		monitorDiffBookDepth();
+		// monitorDiffBookDepth();
 
 
 		//klines();

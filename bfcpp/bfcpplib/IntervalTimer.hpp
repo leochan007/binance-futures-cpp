@@ -3,7 +3,7 @@
 #include <chrono>
 #include <functional>
 #include <future>
-
+#include <thread>
 
 namespace bfcpp 
 {
